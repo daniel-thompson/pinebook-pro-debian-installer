@@ -1,17 +1,19 @@
 MMCBLK ?= /dev/mmcblk1
 
-CHROOT = LANG=C sudo chroot $(PWD)/sysimage
-SYSIMAGE = $(PWD)/sysimage
-KERNELPKG = linux-image-5.4.0-20191129-1-tsys+_5.4.0-20191129-1-tsys+-1_arm64.deb
+ARCH = arm64
 KERNELURL = https://github.com/daniel-thompson/linux/releases/download/v5.4.0-20191129-1-tsys%2B/$(KERNELPKG)
-STEPS = prep partition u-boot mkfs mount debootstrap mount2 kernel firmware configure umount
+KERNELPKG = linux-image-5.4.0-20191129-1-tsys+_5.4.0-20191129-1-tsys+-1_arm64.deb
+
+CHROOT = LANG=C sudo chroot $(PWD)/sysimage
+STEPS = prep partition u-boot mkfs mount debootstrap mount2 kernel firmware configure tasksel umount
+SYSIMAGE = $(PWD)/sysimage
 
 all : $(STEPS)
 .PHONY: $(STEPS)
 
 prep :
 	git submodule update --init
-	sudo apt install debootstrap
+	sudo apt install debootstrap pigz wget
 
 #
 # Use sfdisk to write a pre-prepared partition table.
@@ -66,17 +68,18 @@ mount :
 # handle keyboard mappings, networking (including remote login) and kernel
 # updates.
 #
-debootstrap : debootstrap.tar.gz
+debootstrap : debootstrap-$(ARCH).tar.gz
 	@printf '\n\n>>>> $@\n\n'
-	sudo tar -C $(SYSIMAGE) -xf debootstrap.tar.gz
+	sudo tar -C $(SYSIMAGE) -xf debootstrap-$(ARCH).tar.gz
 	sudo fallocate -l 2g $(SYSIMAGE)/swapfile
 	sudo mkswap $(SYSIMAGE)/swapfile
 	sudo install etc/fstab $(SYSIMAGE)/etc/fstab
 	sudo install etc/tmpfiles.d/* $(SYSIMAGE)/etc/tmpfiles.d
 	sudo install etc/apt/sources.list $(SYSIMAGE)/etc/apt/sources.list
 
-debootstrap.tar.gz :
+debootstrap-$(ARCH).tar.gz :
 	sudo debootstrap \
+		--arch=$(ARCH) \
 		--include ca-certificates,console-setup,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu \
 		bullseye $(SYSIMAGE)
 	sudo tar -C $(SYSIMAGE) -cf - . | pigz -9c > $@
@@ -127,6 +130,8 @@ configure :
 	$(CHROOT) dpkg-reconfigure keyboard-configuration
 	$(CHROOT) dpkg-reconfigure locales
 	$(CHROOT) dpkg-reconfigure tzdata
+
+tasksel :
 	$(CHROOT) tasksel
 
 umount :
@@ -138,4 +143,4 @@ umount :
 	sudo umount $(SYSIMAGE)
 
 clean :
-	$(RM) -r debootstrap.tar.gz kernel
+	$(RM) -r debootstrap-*.tar.gz kernel

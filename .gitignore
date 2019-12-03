@@ -1,3 +1,3 @@
-debootstrap.tar.gz
+debootstrap-*.tar.gz
 kernel/
 sysimage/
