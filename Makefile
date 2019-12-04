@@ -5,7 +5,7 @@ KERNELURL = https://github.com/daniel-thompson/linux/releases/download/v5.4.0-20
 KERNELPKG = linux-image-5.4.0-20191129-1-tsys+_5.4.0-20191129-1-tsys+-1_arm64.deb
 
 CHROOT = LANG=C sudo chroot $(PWD)/sysimage
-STEPS = prep partition u-boot mkfs mount debootstrap mount2 kernel firmware configure tasksel umount
+STEPS = prep partition bootloader mkfs mount debootstrap mount2 kernel firmware configure tasksel umount
 SYSIMAGE = $(PWD)/sysimage
 
 all : $(STEPS)
@@ -31,14 +31,14 @@ partition :
 #
 # Write the system firmware to the required partitions.
 #
-u-boot :
+bootloader :
 	@printf '\n\n>>>> $@\n\n'
 	sudo dd if=bootloader/pinebook/filesystem/idbloader.img \
 		of=$(MMCBLK)p1 bs=4096
 	sudo dd if=bootloader/pinebook/filesystem/uboot.img \
-		of=$(MMCBLK)p1 bs=4096
+		of=$(MMCBLK)p2 bs=4096
 	sudo dd if=bootloader/pinebook/filesystem/trust.img \
-		of=$(MMCBLK)p1 bs=4096
+		of=$(MMCBLK)p3 bs=4096
 
 #
 # Create the three filesystems.
