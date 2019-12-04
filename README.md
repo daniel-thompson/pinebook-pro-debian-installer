@@ -1,17 +1,16 @@
 Pinebook Pro - Debian from Scratch
 ==================================
 
-pinebook-pro-from-scratch is a simple Debian installer for the Pinebook
-Pro.
+pinebook-pro-debian-installer is an unofficial Debian installer for the
+Pinebook Pro. It is not endorsed by either Debian or Pine Microsystems.
 
-It is called from-scratch because there is no downloadable image.
-Instead it is a script to build a fresh image from scratch using
-debootstrap and then runs a few interactive commands to help you 
-customize your install.
+There is no downloadable image, instead it is a script that constructs
+a fresh image from scratch using debootstrap and then runs a few
+interactive commands to help you customize your install.
 
-No default passwords, no bundled software, minimal tuning, and pure
-upstream debian with the exception of the vendor bootloaders and a
-custom v5.4 kernel.
+No default passwords, no bundled software, minimal tuning, and uses
+pure upstream debian (albeit with the exception of the vendor
+bootloaders and a custom v5.4 kernel).
 
 Just type `make`.
 
@@ -27,9 +26,10 @@ Debian or Ubuntu images (including the default vendor image).
    change this try `make MMCBLK=/dev/mmcblk1` or
    `make MMCBLK=/dev/mmcblk2` as appropriate.
 
-The installer is very incomplete at present. You may have to debug or
-problem solve. `make umount` can be used to unmount the target media
-after a failed attempt to install.
+If the installer fails for any reason then the filesystem
+underconstruction will be left mounted. After performing any
+problem solving you can use `make umount` to cleanly unmount the
+target media.
 
 Limitations
 -----------
@@ -37,9 +37,17 @@ Limitations
  * The installer has received only minimal testing.
  * The `prep` rule may be incomplete (e.g. there may be other
    dependencies that are not automatically installed).
- * gpt.sfdisk may require hand editing to ensure the size the RootFS
-   partition matches that of your eMMC or SD card.
  * Partition names cannot (yet) be customized so there might be problems
    if you use the tool to create a recovery SD card *and* install to
    eMMC (because we use partition labels to locate the rootfs).
  * No support for encrypted rootfs.
+
+Roadmap
+-------
+
+None... sure there will be the occasional bug fix when needed but this
+installer is merely a stop gap. Once that are enough features in the
+upstream kernel and the Pinebook Pro has a fully functional u-boot ready
+to burn to SPI then one should expect the official Debian installer to
+run unmodified. At that point this installer will be obsolete... and
+good riddance!
