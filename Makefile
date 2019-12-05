@@ -5,7 +5,19 @@ KERNELURL = https://github.com/daniel-thompson/linux/releases/download/v5.4.0-20
 KERNELPKG = linux-image-5.4.0-20191129-1-tsys+_5.4.0-20191129-1-tsys+-1_arm64.deb
 
 CHROOT = LANG=C sudo chroot $(PWD)/sysimage
-STEPS = prep partition bootloader mkfs mount debootstrap mount2 kernel firmware configure tasksel umount
+STEPS = \
+	prep \
+	partition \
+	bootloader \
+	$(CRYPT)mkfs \
+	$(CRYPT)mount \
+	$(CRYPT)debootstrap \
+	mount2 \
+	kernel \
+	firmware \
+	configure \
+	tasksel \
+	$(CRYPT)umount
 SYSIMAGE = $(PWD)/sysimage
 
 all : $(STEPS)
@@ -52,10 +64,28 @@ mkfs :
 	sudo mkfs.ext4 -FL Boot $(MMCBLK)p5
 	sudo mkfs.ext4 -FL RootFS $(MMCBLK)p6
 
+cryptmkfs :
+	@printf '\n\n>>>> $@\n\n'
+	sudo mkfs.vfat -n EFI -F 32 $(MMCBLK)p4
+	sudo mkfs.ext4 -FL Boot $(MMCBLK)p5
+	sudo cryptsetup luksFormat /dev/mmcblk1p6
+	sudo cryptsetup open /dev/mmcblk1p6 RootFS
+	sudo mkfs.ext4 -FL RootFS /dev/mapper/RootFS
+
 mount :
 	@printf '\n\n>>>> $@\n\n'
 	mkdir -p $(SYSIMAGE)
 	sudo mount $(MMCBLK)p6 $(SYSIMAGE)
+	sudo mkdir -p $(SYSIMAGE)/boot
+	sudo mount $(MMCBLK)p5 $(SYSIMAGE)/boot
+	sudo mkdir -p $(SYSIMAGE)/boot/efi
+	sudo mount $(MMCBLK)p4 $(SYSIMAGE)/boot/efi
+
+cryptmount :
+	@printf '\n\n>>>> $@\n\n'
+	mkdir -p $(SYSIMAGE)
+	-[ ! -e /dev/mapper/RootFS ] && sudo cryptsetup open /dev/mmcblk1p6 RootFS
+	sudo mount /dev/mapper/RootFS $(SYSIMAGE)
 	sudo mkdir -p $(SYSIMAGE)/boot
 	sudo mount $(MMCBLK)p5 $(SYSIMAGE)/boot
 	sudo mkdir -p $(SYSIMAGE)/boot/efi
@@ -77,12 +107,14 @@ debootstrap : debootstrap-$(ARCH).tar.gz
 	sudo install etc/tmpfiles.d/* $(SYSIMAGE)/etc/tmpfiles.d
 	sudo install etc/apt/sources.list $(SYSIMAGE)/etc/apt/sources.list
 
-debootstrap-$(ARCH).tar.gz :
-	sudo debootstrap \
-		--arch=$(ARCH) \
-		--include ca-certificates,console-setup,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu \
-		bullseye $(SYSIMAGE)
-	sudo tar -C $(SYSIMAGE) -cf - . | pigz -9c > $@
+cryptdebootstrap : debootstrap
+	sudo install etc/fstab.crypt $(SYSIMAGE)/etc/fstab
+	sudo install etc/crypttab $(SYSIMAGE)/etc/crypttab
+
+# The recipe to generate the tarball is moved out into another Makefile
+# so that we can get the dependencies right (if the tarball exists then it
+# will be regenerated if it is older the Makefile.debootstrap).
+include Makefile.debootstrap
 
 mount2 :
 	@printf '\n\n>>>> $@\n\n'
@@ -140,7 +172,11 @@ umount :
 	do \
 		sudo umount $(SYSIMAGE)/$$i; \
 	done
-	sudo umount $(SYSIMAGE)
+	-sudo umount $(SYSIMAGE)
+
+cryptumount : umount
+	@printf '\n\n>>>> $@\n\n'
+	sudo cryptsetup close /dev/mapper/RootFS
 
 clean :
 	$(RM) -r debootstrap-*.tar.gz kernel
