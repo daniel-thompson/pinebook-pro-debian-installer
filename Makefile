@@ -68,8 +68,8 @@ cryptmkfs :
 	@printf '\n\n>>>> $@\n\n'
 	sudo mkfs.vfat -n EFI -F 32 $(MMCBLK)p4
 	sudo mkfs.ext4 -FL Boot $(MMCBLK)p5
-	sudo cryptsetup luksFormat /dev/mmcblk1p6
-	sudo cryptsetup open /dev/mmcblk1p6 RootFS
+	sudo cryptsetup luksFormat $(MMCBLK)p6
+	sudo cryptsetup open $(MMCBLK)p6 RootFS
 	sudo mkfs.ext4 -FL RootFS /dev/mapper/RootFS
 
 mount :
@@ -84,7 +84,7 @@ mount :
 cryptmount :
 	@printf '\n\n>>>> $@\n\n'
 	mkdir -p $(SYSIMAGE)
-	-[ ! -e /dev/mapper/RootFS ] && sudo cryptsetup open /dev/mmcblk1p6 RootFS
+	-[ ! -e /dev/mapper/RootFS ] && sudo cryptsetup open $(MMCBLK)p6 RootFS
 	sudo mount /dev/mapper/RootFS $(SYSIMAGE)
 	sudo mkdir -p $(SYSIMAGE)/boot
 	sudo mount $(MMCBLK)p5 $(SYSIMAGE)/boot
