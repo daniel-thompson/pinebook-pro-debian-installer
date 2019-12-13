@@ -1,8 +1,6 @@
 MMCBLK ?= /dev/mmcblk1
 
 ARCH = arm64
-KERNELURL = https://github.com/daniel-thompson/linux/releases/download/v5.4.0-20191129-1-tsys%2B/$(KERNELPKG)
-KERNELPKG = linux-image-5.4.0-20191129-1-tsys+_5.4.0-20191129-1-tsys+-1_arm64.deb
 
 CHROOT = LANG=C sudo chroot $(PWD)/sysimage
 STEPS = \
@@ -25,7 +23,7 @@ all : $(STEPS)
 
 prep :
 	git submodule update --init
-	sudo apt install debootstrap pigz wget
+	sudo apt-get install -y debootstrap pigz wget
 
 #
 # Use sfdisk to write a pre-prepared partition table.
@@ -129,20 +127,16 @@ mount2 :
 # if it does not exist... and we don't have a real one until we have copied
 # it from the kernel image.
 # 
-kernel : kernel/$(KERNELPKG)
+kernel :
 	@printf '\n\n>>>> $@\n\n'
 	cat etc/default/u-boot.append | sudo tee -a $(SYSIMAGE)/etc/default/u-boot > /dev/null
 	cat etc/initramfs-tools/modules.append | sudo tee -a $(SYSIMAGE)/etc/initramfs-tools/modules > /dev/null
 	sudo install etc/initramfs-tools/conf.d/* $(SYSIMAGE)/etc/initramfs-tools/conf.d/
-	sudo cp kernel/$(KERNELPKG) $(SYSIMAGE)/root
-	sudo touch $(SYSIMAGE)/boot/rk3399-pinebook-pro.dtb
-	$(CHROOT) dpkg --add-architecture arm64
-	$(CHROOT) apt install /root/$(KERNELPKG)
-	sudo cp $(SYSIMAGE)/usr/lib/linux-image-*/rockchip/rk3399-pinebook-pro.dtb $(SYSIMAGE)/boot
-
-kernel/$(KERNELPKG) :
-	mkdir -p kernel/
-	wget -O kernel/$(KERNELPKG) $(KERNELURL)
+	sudo install etc/apt/sources.list.d/kernel-obs.list $(SYSIMAGE)/etc/apt/sources.list.d/
+	sudo install etc/apt/trusted.gpg.d/* $(SYSIMAGE)/etc/apt/trusted.gpg.d/
+	sudo install etc/kernel/postinst.d/* $(SYSIMAGE)/etc/kernel/postinst.d/
+	$(CHROOT) apt-get update
+	$(CHROOT) apt-get install -y linux-image-pinebookpro-arm64
 
 firmware :
 	@printf '\n\n>>>> $@\n\n'
