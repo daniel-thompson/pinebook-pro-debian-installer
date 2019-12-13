@@ -32,10 +32,6 @@ prep :
 #
 # Currently the partition table is pre-configured for a 64GB device.
 #
-# TODO: Automatically choose the size of the last partition. Find the
-#       dimensions of the disk using:
-#       lsblk $(MMCBLK) --noheadings --bytes --output SIZE | head -1
-#
 partition :
 	@printf '\n\n>>>> $@\n\n'
 	sudo sfdisk $(MMCBLK) < gpt.sfdisk
