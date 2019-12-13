@@ -1,7 +1,7 @@
 debootstrap-$(ARCH).tar.gz : Makefile.debootstrap
 	sudo debootstrap \
 		--arch=$(ARCH) \
-		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu \
+		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu,gnupg,plymouth,plymouth-themes \
 		bullseye $(SYSIMAGE)
 	sudo tar -C $(SYSIMAGE) -cf - . | pigz -9c > $@
 

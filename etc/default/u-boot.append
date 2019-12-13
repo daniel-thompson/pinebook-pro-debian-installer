@@ -1,3 +1,4 @@
 
+U_BOOT_TIMEOUT="10"
 U_BOOT_FDT="rk3399-pinebook-pro.dtb"
-U_BOOT_PARAMETERS="console=ttyS2,1500000n8 console=tty0 rw rootwait coherent_pool=1M"
+U_BOOT_PARAMETERS="console=ttyS2,1500000n8 console=tty0 ro quiet splash plymouth.ignore-serial-consoles maxcpus=4 coherent_pool=1M"
