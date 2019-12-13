@@ -27,7 +27,7 @@ Debian or Ubuntu images (including the default vendor image).
    `make MMCBLK=/dev/mmcblk2` as appropriate.
 
 If the installer fails for any reason then the filesystem
-underconstruction will be left mounted. After performing any
+under construction will be left mounted. After performing any
 problem solving you can use `make umount` to cleanly unmount the
 target media.
 
