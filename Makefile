@@ -135,6 +135,8 @@ kernel :
 	sudo install etc/apt/sources.list.d/kernel-obs.list $(SYSIMAGE)/etc/apt/sources.list.d/
 	sudo install etc/apt/trusted.gpg.d/* $(SYSIMAGE)/etc/apt/trusted.gpg.d/
 	sudo install etc/kernel/postinst.d/* $(SYSIMAGE)/etc/kernel/postinst.d/
+	sudo mkdir -p $(SYSIMAGE)/var/lib/alsa/
+	sudo install var/lib/alsa/asound.state $(SYSIMAGE)/var/lib/alsa/asound.state
 	$(CHROOT) apt-get update
 	$(CHROOT) apt-get install -y linux-image-pinebookpro-arm64
 
