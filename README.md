@@ -34,14 +34,29 @@ target media.
 Limitations
 -----------
 
- * The installer has received only minimal testing.
- * The `prep` rule may be incomplete (e.g. there may be other
-   dependencies that are not automatically installed).
  * Partition names cannot (yet) be customized so there might be problems
    if you use the tool to create a recovery SD card *and* install to
    eMMC (because we use partition labels to locate the rootfs).
- * No support for encrypted rootfs.
 
+Hacks
+-----
+
+Mostly the installer tried to avoid hacks that cannot be replicated by a
+real distro installer (e.g. one that is not tailored specifically for
+Pinebook Pro). However some problems are so ackward for users the
+following temporary hacks have been tolerated.
+
+ * The ALSA state cache is pre-configured. This ensured that audio will
+   work out-of-the-box. This is temporary until upstream ALSA UCM support
+   for Pinebook Pro is added.
+ * The kernel is booted with maxcpus=4 to ensure that is does not use
+   the Cortex A72 cores during initialization. This works around a
+   bootloader problem that hands these cores to the kernel with clock
+   speed set so slow that it compromises boot times. The disabled cores
+   will be re-enabled later in the boot process. Be warned that to make
+   this work some kernel hardening must be disabled (ex:
+   HARDEN_EL2_VECTORS).
+ 
 Roadmap
 -------
 
