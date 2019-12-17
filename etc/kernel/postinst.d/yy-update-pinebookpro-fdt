@@ -1,0 +1,22 @@
+#!/bin/sh
+
+set -e
+
+# Act only if u-boot-update is still present
+if [ -x /usr/sbin/u-boot-update ]
+then
+	FDT="rk3399-pinebook-pro.dtb"
+	DTBS="/usr/lib/linux-image-"
+
+	# Back up the existing DT in a place that u-boot can read from if
+	# needed.
+	if [ -e "/boot/${FDT}" ]
+	then
+		cp /boot/${FDT} /boot/${FDT}.bak
+	fi
+
+	# Find the most recent DT and copy it to /boot
+	NEWFDT="`find ${DTBS}* -name ${FDT} | linux-version sort --reverse | head -1`"
+	echo "P: Found ${NEWFDT}"
+	cp ${NEWFDT} /boot
+fi
