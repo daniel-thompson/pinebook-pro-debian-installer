@@ -137,6 +137,7 @@ kernel :
 	sudo install etc/kernel/postinst.d/* $(SYSIMAGE)/etc/kernel/postinst.d/
 	sudo mkdir -p $(SYSIMAGE)/var/lib/alsa/
 	sudo install var/lib/alsa/asound.state $(SYSIMAGE)/var/lib/alsa/asound.state
+	$(CHROOT) dpkg --add-architecture arm64
 	$(CHROOT) apt-get update
 	$(CHROOT) apt-get install -y linux-image-pinebookpro-arm64
 
