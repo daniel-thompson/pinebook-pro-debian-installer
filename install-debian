@@ -238,7 +238,12 @@ do_umount () {
 }
 
 do_clean () {
-	rm -rf debootstrap-*.tar.gz kernel
+	rm -f \
+		debootstrap-*.tar.gz \
+		gpt.sfdisk \
+		etc/crypttab \
+		etc/fstab \
+		etc/fstab.crypt
 }
 
 do_all () {
