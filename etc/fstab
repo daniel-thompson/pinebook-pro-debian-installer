@@ -1,4 +1,0 @@
-PARTLABEL=EFI		/boot/efi	vfat	defaults,discard,relatime   0 0
-PARTLABEL=Boot		/boot		ext4	defaults,discard,relatime   0 0
-PARTLABEL=RootFS	/		ext4	defaults,discard,relatime   0 0
-/swapfile		swap		swap	defaults		    0 0

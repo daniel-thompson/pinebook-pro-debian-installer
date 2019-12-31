@@ -12,31 +12,42 @@ No default passwords, no bundled software, minimal tuning, and uses
 pure upstream Debian (albeit with the exception of the vendor
 bootloaders and a custom v5.4 kernel).
 
-Just type `make`.
+To install to the removable SD card slot, just run `./install-debian`.
 
 Quickstart
 ----------
 
-The installer runs on the Pinebook Pro itself and should work on most
-Debian or Ubuntu images (including the default vendor image).
+The installer runs on the Pinebook Pro itself using an already installed
+operating system. It should work ffrom most Debian or Ubuntu images
+(including the default vendor image).
 
 1. Unmount any existing filesystems on the disk you want to install
    onto.
-2. Run `make`. This will default to installing to `/dev/mmcblk1`, to
-   change this try `make MMCBLK=/dev/mmcblk1` or
-   `make MMCBLK=/dev/mmcblk2` as appropriate.
+2. Run `./install-debian`. This will default to installing to
+   `/dev/mmcblk1`, to change this try `./install-debian BLKDEV=/dev/mmcblk2`
+   or `./install-debian BLKDEV=/dev/sda` as appropriate.
 
-If the installer fails for any reason then the filesystem
-under construction will be left mounted. After performing any
-problem solving you can use `make umount` to cleanly unmount the
-target media.
+Additional options
+------------------
 
-Limitations
------------
+These options can be supplied on the command line or via the
+environment.
 
-* Partition names cannot (yet) be customized so there might be problems
-  if you use the tool to create a recovery SD card *and* install to
-  eMMC (because we use partition labels to locate the rootfs).
+ * `BLKDEV=<blkdev>` - Install to the specified block device (e.g.
+   `/dev/mmcblk2`)
+ * `BLKNAME=<name>` - Name to describe the install media (e.g. `eMMC`,
+   `microSD`, `NVME`). This is used for the filesystem and partition labels
+   and some file managers will use these to help you identify which
+   volume is which. If not supplied defaults to the basename of
+   `BLKDEV` (e.g.  `mmcblk1`).
+ * `CRYPT=y` - Encrypt the filesystem (and swap space) using LUKS. This
+   requires your kernel to support filesystem encryption. If you
+   original distro does not support this then you can make a temporary
+   unencrypted install with this installer and then use that OS to do an
+   encrypted install.
+ * `DRYRUN=y` - Show the commands the installer would "like" to run but
+   do not execute any of them.
+ * `MMCBLK=<blkdev>` - (deprecated) alias for `BLKDEV=`
 
 Hacks
 -----

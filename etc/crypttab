@@ -1,2 +1,0 @@
-# <target name>	<source device>		<key file>	<options>
-RootFS		PARTLABEL=RootFS	none		luks,discard

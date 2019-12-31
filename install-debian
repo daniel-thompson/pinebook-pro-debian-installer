@@ -1,0 +1,300 @@
+#!/bin/bash
+
+#
+# install-debian
+#
+
+# Convert a command to simply invoke it and echo
+conceal () {
+	eval "$1 () {
+		echo \"\$ $1\" \"\$@\"
+	}"
+}
+
+age () {
+	born_on=`stat --format %Y $1`
+	now=`date +%s`
+	echo $(($now - $born_on))
+}
+
+build_from_template () {
+	sed \
+		-e "s/\${BLKNAME}/`basename ${BLKNAME}`/g" \
+		< $1.template > $1
+}
+
+on_target () {
+	sudo LANG=C chroot ${PWD}/sysimage "$@"
+}
+
+do_prep () {
+	printf '\n\n>>>> Preparing to install\n\n'
+
+	git submodule update --init
+
+	PACKAGES="debootstrap pigz"
+	[ ! -z "$CRYPT" ] && PACKAGES="$PACKAGES cryptsetup"
+	sudo apt-get install -y $PACKAGES
+}
+
+#
+# Use sfdisk to write a pre-prepared partition table.
+#
+# Currently the partition table is pre-configured for a 64GB device.
+#
+do_partition () {
+	printf '\n\n>>>> Partitioning\n\n'
+
+	build_from_template gpt.sfdisk
+	sudo sfdisk ${BLKDEV} < gpt.sfdisk
+}
+
+#
+# Write the system firmware to the required partitions.
+#
+do_bootloader () {
+	printf '\n\n>>>> Installing Pinebook Pro boot firmware\n\n'
+
+	sudo dd if=bootloader/pinebook/filesystem/idbloader.img \
+		of=${PARTITION}1 bs=4096
+	sudo dd if=bootloader/pinebook/filesystem/uboot.img \
+		of=${PARTITION}2 bs=4096
+	sudo dd if=bootloader/pinebook/filesystem/trust.img \
+		of=${PARTITION}3 bs=4096
+}
+
+#
+# Create the three filesystems.
+#
+# Currently the EFI filesystem is unused but it included here since it
+# will be useful in the future when we enable EFI support in u-boot.
+#
+do_mkfs () {
+	printf '\n\n>>>> Formatting\n\n'
+
+	sudo mkfs.vfat -n EFI -F 32 ${PARTITION}4
+	sudo mkfs.ext4 -FL ${BLKNAME}-Boot ${PARTITION}5
+
+	if [ -z "$CRYPT" ]
+	then
+		sudo mkfs.ext4 -FL ${BLKNAME}-RootFS ${PARTITION}6
+	else
+		sudo cryptsetup luksFormat ${PARTITION}6
+		sudo cryptsetup open ${PARTITION}6 ${BLKNAME}-RootFS
+		sudo mkfs.ext4 -FL ${BLKNAME}-RootFS /dev/mapper/${BLKNAME}-RootFS
+	fi
+}
+
+do_mount () {
+	printf '\n\n>>>> Mounting target filesystem\n\n'
+
+	if [ -z "$CRYPT" ]
+	then
+		mkdir -p ${SYSIMAGE}
+		sudo mount ${PARTITION}6 ${SYSIMAGE}
+		sudo mkdir -p ${SYSIMAGE}/boot
+		sudo mount ${PARTITION}5 ${SYSIMAGE}/boot
+		sudo mkdir -p ${SYSIMAGE}/boot/efi
+		sudo mount ${PARTITION}4 ${SYSIMAGE}/boot/efi
+	else
+		mkdir -p ${SYSIMAGE}
+		[ ! -e /dev/mapper/${BLKNAME}-RootFS ] \
+			&& sudo cryptsetup open ${PARTITION}6 ${BLKNAME}-RootFS
+		sudo mount /dev/mapper/${BLKNAME}-RootFS ${SYSIMAGE}
+		sudo mkdir -p ${SYSIMAGE}/boot
+		sudo mount ${PARTITION}5 ${SYSIMAGE}/boot
+		sudo mkdir -p ${SYSIMAGE}/boot/efi
+		sudo mount ${PARTITION}4 ${SYSIMAGE}/boot/efi
+	fi
+}
+
+#
+# Construct a minimal Debian root image
+# 
+# Strictly speaking we are not fully minimal because we add some packages to
+# handle keyboard mappings, networking (including remote login) and kernel
+# updates.
+#
+do_debootstrap () {
+	printf '\n\n>>>> Installing base system\n\n'
+
+	# If there is no cached copy or the copy is older than
+	# seven days then regenerate from scratch
+	if [ ! -e debootstrap-${ARCH}.tar.gz ] || \
+	   [ `age debootstrap-${ARCH}.tar.gz` -gt $((7*24*60*60)) ]
+	then
+		do_real_debootstrap
+	fi
+
+	sudo tar -C ${SYSIMAGE} -xf debootstrap-${ARCH}.tar.gz
+	sudo fallocate -l 2g ${SYSIMAGE}/swapfile
+	sudo mkswap ${SYSIMAGE}/swapfile
+	build_from_template etc/fstab
+	sudo install etc/fstab ${SYSIMAGE}/etc/fstab
+	sudo install etc/tmpfiles.d/* ${SYSIMAGE}/etc/tmpfiles.d
+	sudo install etc/apt/sources.list ${SYSIMAGE}/etc/apt/sources.list
+
+	if [ ! -z "$CRYPT" ]
+	then
+		build_from_template etc/fstab.crypt
+		sudo install etc/fstab.crypt ${SYSIMAGE}/etc/fstab
+		build_from_template etc/crypttab
+		sudo install etc/crypttab ${SYSIMAGE}/etc/crypttab
+	fi
+
+	# Steal network config from the host filesystem. Normally debootstrap
+	# will do this for us but if we roam networks between generating the
+	# cached image and consuming it then we must update the file.
+	sudo install /etc/resolv.conf ${SYSIMAGE}/etc/resolv.conf
+}
+
+# The recipe to generate the tarball.
+do_real_debootstrap () {
+	sudo debootstrap \
+		--arch=${ARCH} \
+		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu,gnupg,plymouth,plymouth-themes \
+		bullseye ${SYSIMAGE}
+	sudo tar -C ${SYSIMAGE} -cf - . | pigz -9c > debootstrap-${ARCH}.tar.gz
+}
+
+do_mount2 () {
+	printf '\n\n>>>> Mount special file systems\n\n'
+
+	for i in dev proc sys
+	do
+		sudo mkdir -p ${SYSIMAGE}/$i
+		sudo mount --bind /$i ${SYSIMAGE}/$i
+	done
+}
+
+#
+# We configure /etc/default/u-boot prior to installing the kernel since
+# that means debian will automatically generate an extlinux.conf for us.
+# 
+# Note that we have to create a dummy DT file (rk3399-pinebook-pro.dtb) 
+# since the u-boot integration will not include this in extlinux.conf 
+# if it does not exist... and we don't have a real one until we have copied
+# it from the kernel image.
+# 
+do_kernel () {
+	printf '\n\n>>>> Installing kernel\n\n'
+
+	cat etc/default/u-boot.append | sudo tee -a ${SYSIMAGE}/etc/default/u-boot > /dev/null
+	cat etc/initramfs-tools/modules.append | sudo tee -a ${SYSIMAGE}/etc/initramfs-tools/modules > /dev/null
+	sudo install etc/initramfs-tools/conf.d/* ${SYSIMAGE}/etc/initramfs-tools/conf.d/
+	sudo install etc/apt/sources.list.d/kernel-obs.list ${SYSIMAGE}/etc/apt/sources.list.d/
+	sudo install etc/apt/trusted.gpg.d/* ${SYSIMAGE}/etc/apt/trusted.gpg.d/
+	sudo install etc/kernel/postinst.d/* ${SYSIMAGE}/etc/kernel/postinst.d/
+	sudo mkdir -p ${SYSIMAGE}/var/lib/alsa/
+	sudo install var/lib/alsa/asound.state ${SYSIMAGE}/var/lib/alsa/asound.state
+	on_target dpkg --add-architecture arm64
+	on_target apt-get update
+	on_target apt-get install -y linux-image-pinebookpro-arm64
+}
+
+do_firmware () {
+	printf '\n\n>>>> Installed additional firmware files\n\n'
+
+	sudo mkdir -p ${SYSIMAGE}/lib/firmware
+	sudo cp -a firmware/brcm ${SYSIMAGE}/lib/firmware
+	sudo mkdir -p ${SYSIMAGE}/lib/firmware
+}
+
+do_configure () {
+	printf '\n\n>>>> Basic configuration\n\n'
+
+	if [ -z $DRYRUN ]
+	then
+		read -p "About to create main user, please enter username: " NEWUSER
+	else
+		NEWUSER=dryrunuser
+	fi
+	on_target adduser --add_extra_groups $NEWUSER
+	on_target adduser $NEWUSER sudo
+
+	on_target dpkg-reconfigure keyboard-configuration
+	on_target dpkg-reconfigure locales
+	on_target dpkg-reconfigure tzdata
+}
+
+do_tasksel () {
+	printf '\n\n>>>> Task selection\n\n'
+	on_target tasksel
+}
+
+do_umount () {
+	printf '\n\n>>>> umount\n\n'
+
+	for i in boot/efi boot dev proc sys
+	do
+		sudo umount ${SYSIMAGE}/$i && true
+	done
+	sudo umount ${SYSIMAGE} && true
+
+	if [ ! -z "$CRYPT" ]
+	then
+		sudo cryptsetup close /dev/mapper/${BLKNAME}-RootFS && true
+	fi
+}
+
+do_clean () {
+	rm -rf debootstrap-*.tar.gz kernel
+}
+
+do_all () {
+	do_prep
+	do_partition
+	do_bootloader
+	do_mkfs
+	trap do_umount EXIT
+	do_mount
+	do_debootstrap
+	do_mount2
+	do_kernel
+	do_firmware
+	do_configure
+	do_tasksel
+}
+
+# For now we have *very* simple argument processing (similar to make)
+unset DO
+for i in "$@"
+do
+
+	case "$i" in
+	do_*)
+		DO="$DO $i"
+		;;
+	*)
+		eval "$i"
+	esac
+done
+[ -z $DO ] && DO=do_all
+
+ARCH=arm64
+SYSIMAGE="${PWD}/sysimage"
+
+[ -z $MMCBLK ] && MMCBLK=/dev/mmcblk1
+[ -z $BLKDEV ] && BLKDEV=${MMCBLK}
+[ -z $BLKNAME ] && BLKNAME=`basename ${BLKDEV}`
+case "$BLKDEV" in
+*[0-9])
+	PARTITION=${BLKDEV}p
+	;;
+*)
+	PARTITION=${BLKDEV}
+	;;
+esac 
+
+if [ ! -z $DRYRUN ]
+then
+	conceal git
+	conceal sudo
+else
+	set -e 
+fi
+
+for i in $DO
+do
+	$i
+done

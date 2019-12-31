@@ -1,2 +1,6 @@
 debootstrap-*.tar.gz
+etc/crypttab
+etc/fstab
+etc/fstab.crypt
+gpt.sfdisk
 sysimage/
