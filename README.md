@@ -18,7 +18,7 @@ Quickstart
 ----------
 
 The installer runs on the Pinebook Pro itself using an already installed
-operating system. It should work ffrom most Debian or Ubuntu images
+operating system. It should work from most Debian or Ubuntu images
 (including the default vendor image).
 
 1. Unmount any existing filesystems on the disk you want to install
