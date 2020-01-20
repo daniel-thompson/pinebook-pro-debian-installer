@@ -278,6 +278,10 @@ do_all () {
 	do_tasksel
 }
 
+ARCH=arm64
+SYSIMAGE="${PWD}/sysimage"
+MMCBLK="$(readlink -f /dev/disk/by-path/platform-fe320000.dwmmc)"
+
 # For now we have *very* simple argument processing (similar to make)
 unset DO
 for i in "$@"
@@ -293,10 +297,6 @@ do
 done
 [ -z $DO ] && DO=do_all
 
-ARCH=arm64
-SYSIMAGE="${PWD}/sysimage"
-
-[ -z $MMCBLK ] && MMCBLK=/dev/mmcblk1
 [ -z $BLKDEV ] && BLKDEV=${MMCBLK}
 [ -z $BLKNAME ] && BLKNAME=`basename ${BLKDEV}`
 case "$BLKDEV" in
