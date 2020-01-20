@@ -237,6 +237,16 @@ do_umount () {
 	fi
 }
 
+do_force_umount () {
+	printf "\n\n>>>> Forceful unmount of all ${BLKDEV} partitions\n\n"
+
+	for i in $(mount | grep ${BLKDEV} | cut -f1 -d\ )
+	do
+		echo "Unmounting $i"
+		sudo umount $i
+	done
+}
+
 do_clean () {
 	rm -f \
 		debootstrap-*.tar.gz \
