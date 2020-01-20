@@ -256,6 +256,13 @@ do_clean () {
 		etc/fstab.crypt
 }
 
+do_shell () {
+	trap do_umount EXIT
+	do_mount
+	do_mount2
+	on_target bash
+}
+
 do_all () {
 	do_prep
 	do_partition
