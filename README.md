@@ -23,8 +23,9 @@ operating system. It should work from most Debian or Ubuntu images
 
 1. Unmount any existing filesystems on the disk you want to install
    onto.
-2. Run `./install-debian`. This will default to installing to
-   `/dev/mmcblk1`, to change this try `./install-debian BLKDEV=/dev/mmcblk2`
+2. Run `./install-debian`. This will default to installing to the SD card,
+   to change this try `./install-debian BLKDEV=/dev/mmcblk0`, 
+   `./install-debian BLKDEV=/dev/mmcblk2`
    or `./install-debian BLKDEV=/dev/sda` as appropriate.
 
 Additional options
@@ -48,6 +49,20 @@ environment.
  * `DRYRUN=y` - Show the commands the installer would "like" to run but
    do not execute any of them.
  * `MMCBLK=<blkdev>` - (deprecated) alias for `BLKDEV=`
+
+Support
+-------
+
+ * For support and general discussion use the
+   [Pine64 forum](https://forum.pine64.org/showthread.php?tid=8487).
+ * Check out the Pine64 wiki for [feature status, known issues and 
+   workarounds](https://wiki.pine64.org/index.php/Pinebook_Pro_Debian_Installer).
+   Please contribute to the wiki and help keep it up to date! If you already
+   have a forum login then this can also be used to update the wiki.
+ * Please only use the github Issue tracker for bugs in the installer
+   and the custom kernel. Problems that originate with upstream Debian
+   packages should be reported to the upstream instead. If in doubt
+   then ask on the forum!
 
 Roadmap
 -------
