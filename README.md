@@ -42,10 +42,11 @@ environment.
    volume is which. If not supplied defaults to the basename of
    `BLKDEV` (e.g.  `mmcblk1`).
  * `CRYPT=y` - Encrypt the filesystem (and swap space) using LUKS. This
-   requires your kernel to support filesystem encryption. If you
-   original distro does not support this then you can make a temporary
-   unencrypted install with this installer and then use that OS to do an
-   encrypted install.
+   requires your kernel to support filesystem encryption. The original
+   factory distro did not include this feature so it it not possible to
+   install a LUKS filesystem from this distro. However you can make a
+   temporary unencrypted install with this installer and then use the
+   temporary OS to perform a full encypted install.
  * `DRYRUN=y` - Show the commands the installer would "like" to run but
    do not execute any of them.
  * `MMCBLK=<blkdev>` - (deprecated) alias for `BLKDEV=`
