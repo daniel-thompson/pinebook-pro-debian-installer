@@ -49,6 +49,16 @@ environment.
    do not execute any of them.
  * `MMCBLK=<blkdev>` - (deprecated) alias for `BLKDEV=`
 
+Roadmap
+-------
+
+None... sure there will be the occasional bug fix when needed but this
+installer is merely a stop gap. Once that are enough features in the
+upstream kernel and the Pinebook Pro has a fully functional u-boot ready
+to burn to SPI then one should expect the official Debian installer to
+run unmodified. At that point this installer will be obsolete... and
+good riddance!
+
 Hacks
 -----
 
@@ -68,13 +78,3 @@ following temporary hacks have been tolerated.
   *To make the `maxcpus=4` hack work, some optional kernel hardening
   features must be disabled (ex:
   [`HARDEN_EL2_VECTORS`](https://lists.cs.columbia.edu/pipermail/kvmarm/2018-March/030321.html))*
-
-Roadmap
--------
-
-None... sure there will be the occasional bug fix when needed but this
-installer is merely a stop gap. Once that are enough features in the
-upstream kernel and the Pinebook Pro has a fully functional u-boot ready
-to burn to SPI then one should expect the official Debian installer to
-run unmodified. At that point this installer will be obsolete... and
-good riddance!
