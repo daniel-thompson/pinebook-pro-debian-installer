@@ -4,3 +4,4 @@ installer, large and small!
  * Daniel Thompson
  * Eduardo Minguez Perez
  * Dick Olsson
+ * Sharp Hall
