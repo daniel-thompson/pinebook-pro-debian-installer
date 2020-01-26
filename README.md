@@ -46,7 +46,7 @@ environment.
    factory distro did not include this feature so it it not possible to
    install a LUKS filesystem from this distro. However you can make a
    temporary unencrypted install with this installer and then use the
-   temporary OS to perform a full encypted install.
+   temporary OS to perform a full encrypted install.
  * `DRYRUN=y` - Show the commands the installer would "like" to run but
    do not execute any of them.
  * `MMCBLK=<blkdev>` - (deprecated) alias for `BLKDEV=`
@@ -69,7 +69,7 @@ Roadmap
 -------
 
 None... sure there will be the occasional bug fix when needed but this
-installer is merely a stop gap. Once that are enough features in the
+installer is merely a stop gap. Once there are enough features in the
 upstream kernel and the Pinebook Pro has a fully functional u-boot ready
 to burn to SPI then one should expect the official Debian installer to
 run unmodified. At that point this installer will be obsolete... and
@@ -80,7 +80,7 @@ Hacks
 
 Mostly the installer tried to avoid hacks that cannot be replicated by a
 real distro installer (e.g. one that is not tailored specifically for
-Pinebook Pro). However some problems are so ackward for users the
+Pinebook Pro). However some problems are so awkward for users the
 following temporary hacks have been tolerated.
 
 * The ALSA state cache is [pre-configured](var/lib/alsa/asound.state).
