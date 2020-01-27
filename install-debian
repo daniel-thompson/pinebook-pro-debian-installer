@@ -128,6 +128,7 @@ do_debootstrap () {
 
 	sudo tar -C ${SYSIMAGE} -xf debootstrap-${ARCH}.tar.gz
 	sudo fallocate -l 2g ${SYSIMAGE}/swapfile
+	sudo chmod 600 ${SYSIMAGE}/swapfile
 	sudo mkswap ${SYSIMAGE}/swapfile
 	build_from_template etc/fstab
 	sudo install etc/fstab ${SYSIMAGE}/etc/fstab
