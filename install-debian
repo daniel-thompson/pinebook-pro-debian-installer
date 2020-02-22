@@ -212,9 +212,14 @@ do_configure () {
 
 	if [ -z $DRYRUN ]
 	then
+		read -p "Choose a hostname (or press Return to keep default): " NEWHOSTNAME
 		read -p "About to create main user, please enter username: " NEWUSER
 	else
 		NEWUSER=dryrunuser
+	fi
+	if [ ! -z "${NEWHOSTNAME}" ]
+	then
+		on_target bash -c "echo ${HOSTNAME} > /etc/hostname"
 	fi
 	on_target adduser --add_extra_groups $NEWUSER
 	on_target adduser $NEWUSER sudo
