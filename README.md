@@ -34,6 +34,8 @@ Additional options
 These options can be supplied on the command line or via the
 environment.
 
+ * `ARCH={armhf|arm64}` - Choose the architecture to installed (default:
+   `arm64`)
  * `BLKDEV=<blkdev>` - Install to the specified block device (e.g.
    `/dev/mmcblk2`)
  * `BLKNAME=<name>` - Name to describe the install media (e.g. `eMMC`,
@@ -50,6 +52,8 @@ environment.
  * `DRYRUN=y` - Show the commands the installer would "like" to run but
    do not execute any of them.
  * `MMCBLK=<blkdev>` - (deprecated) alias for `BLKDEV=`
+ * `RELEASE={buster|bullseye}` - Choose the Debian release (default:
+   `bullseye`)
 
 Support
 -------

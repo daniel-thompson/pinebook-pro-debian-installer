@@ -120,20 +120,21 @@ do_debootstrap () {
 
 	# If there is no cached copy or the copy is older than
 	# seven days then regenerate from scratch
-	if [ ! -e debootstrap-${ARCH}.tar.gz ] || \
-	   [ `age debootstrap-${ARCH}.tar.gz` -gt $((7*24*60*60)) ]
+	if [ ! -z ${DEBOOTSTRAP_PACKAGES} ] || \
+	   [ ! -e debootstrap-${RELEASE}-${ARCH}.tar.gz ] || \
+	   [ `age debootstrap-${RELEASE}-${ARCH}.tar.gz` -gt $((7*24*60*60)) ]
 	then
 		do_real_debootstrap
 	fi
 
-	sudo tar -C ${SYSIMAGE} -xf debootstrap-${ARCH}.tar.gz
+	sudo tar -C ${SYSIMAGE} -xf debootstrap-${RELEASE}-${ARCH}.tar.gz
 	sudo fallocate -l 2g ${SYSIMAGE}/swapfile
 	sudo chmod 600 ${SYSIMAGE}/swapfile
 	sudo mkswap ${SYSIMAGE}/swapfile
 	build_from_template etc/fstab
 	sudo install etc/fstab ${SYSIMAGE}/etc/fstab
 	sudo install etc/tmpfiles.d/* ${SYSIMAGE}/etc/tmpfiles.d
-	sudo install etc/apt/sources.list ${SYSIMAGE}/etc/apt/sources.list
+	sudo install etc/apt/sources.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list
 
 	if [ ! -z "$CRYPT" ]
 	then
@@ -153,9 +154,14 @@ do_debootstrap () {
 do_real_debootstrap () {
 	sudo debootstrap \
 		--arch=${ARCH} \
-		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu,gnupg,plymouth,plymouth-themes \
-		bullseye ${SYSIMAGE}
-	sudo tar -C ${SYSIMAGE} -cf - . | pigz -9c > debootstrap-${ARCH}.tar.gz
+		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu,gnupg,plymouth,plymouth-themes${DEBOOTSTRAP_PACKAGES} \
+		${RELEASE} ${SYSIMAGE}
+	if [ -z $DRYRUN ]
+	then
+		sudo tar -C ${SYSIMAGE} -cf - . | pigz -9c > debootstrap-${RELEASE}-${ARCH}.tar.gz
+	else
+		echo "sudo tar -C ${SYSIMAGE} -cf - . | pigz -9c > debootstrap-${RELEASE}-${ARCH}.tar.gz"
+	fi
 }
 
 do_mount2 () {
@@ -183,7 +189,7 @@ do_kernel () {
 	cat etc/default/u-boot.append | sudo tee -a ${SYSIMAGE}/etc/default/u-boot > /dev/null
 	cat etc/initramfs-tools/modules.append | sudo tee -a ${SYSIMAGE}/etc/initramfs-tools/modules > /dev/null
 	sudo install etc/initramfs-tools/conf.d/* ${SYSIMAGE}/etc/initramfs-tools/conf.d/
-	sudo install etc/apt/sources.list.d/kernel-obs.list ${SYSIMAGE}/etc/apt/sources.list.d/
+	sudo install etc/apt/sources.list.d/kernel-obs.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list.d/kernel-obs.list
 	sudo install etc/apt/trusted.gpg.d/* ${SYSIMAGE}/etc/apt/trusted.gpg.d/
 	sudo install etc/kernel/postinst.d/* ${SYSIMAGE}/etc/kernel/postinst.d/
 	sudo mkdir -p ${SYSIMAGE}/var/lib/alsa/
@@ -280,6 +286,7 @@ do_all () {
 }
 
 ARCH=arm64
+RELEASE=bullseye
 SYSIMAGE="${PWD}/sysimage"
 MMCBLK="$(readlink -f /dev/disk/by-path/platform-fe320000.dwmmc)"
 
@@ -308,6 +315,8 @@ case "$BLKDEV" in
 	PARTITION=${BLKDEV}
 	;;
 esac 
+
+[ ! -z $DEBOOTSTRAP_PACKAGES ] && DEBOOTSTRAP_PACKAGES=,${DEBOOTSTRAP_PACKAGES}
 
 if [ ! -z $DRYRUN ]
 then
