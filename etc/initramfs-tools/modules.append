@@ -31,7 +31,6 @@ ip_tables
 x_tables
 ipv6
 nf_defrag_ipv6
-panfrost
 gpu_sched
 rtc_rk808
 phy_rockchip_pcie
