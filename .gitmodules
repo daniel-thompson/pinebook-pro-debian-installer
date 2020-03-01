@@ -3,5 +3,5 @@
 	url = https://github.com/mrfixit2001/updates_repo
 	branch = v1.5
 [submodule "firmware"]
-	path = firmware
+	path = pinebook-firmware
 	url = https://gitlab.manjaro.org/tsys/pinebook-firmware.git

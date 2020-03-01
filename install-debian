@@ -212,8 +212,8 @@ do_firmware () {
 	printf '\n\n>>>> Installed additional firmware files\n\n'
 
 	sudo mkdir -p ${SYSIMAGE}/lib/firmware/{brcm,rockchip}
-	sudo cp -a firmware/brcm/* ${SYSIMAGE}/lib/firmware/brcm/
-	sudo cp -a firmware/rockchip/* ${SYSIMAGE}/lib/firmware/rockchip/
+	sudo cp -a pinebook-firmware/brcm/* ${SYSIMAGE}/lib/firmware/brcm/
+	sudo cp -a pinebook-firmware/rockchip/* ${SYSIMAGE}/lib/firmware/rockchip/
 }
 
 do_configure () {
