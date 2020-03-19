@@ -32,7 +32,7 @@ do_prep () {
 
 	git submodule update --init
 
-	PACKAGES="debootstrap pigz"
+	PACKAGES="debootstrap pigz dosfstools"
 	[ ! -z "$CRYPT" ] && PACKAGES="$PACKAGES cryptsetup"
 	sudo apt-get install -y $PACKAGES
 }
