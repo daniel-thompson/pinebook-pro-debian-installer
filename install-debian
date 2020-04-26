@@ -229,7 +229,7 @@ do_configure () {
 	fi
 	if [ ! -z "${NEWHOSTNAME}" ]
 	then
-		on_target bash -c "echo ${HOSTNAME} > /etc/hostname"
+		on_target bash -c "echo ${NEWHOSTNAME} > /etc/hostname"
 	fi
 	on_target adduser --add_extra_groups $NEWUSER
 	on_target adduser $NEWUSER sudo
