@@ -132,22 +132,22 @@ do_debootstrap () {
 	sudo chmod 600 ${SYSIMAGE}/swapfile
 	sudo mkswap ${SYSIMAGE}/swapfile
 	build_from_template etc/fstab
-	sudo install etc/fstab ${SYSIMAGE}/etc/fstab
-	sudo install etc/tmpfiles.d/* ${SYSIMAGE}/etc/tmpfiles.d
-	sudo install etc/apt/sources.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list
+	sudo install -m644 etc/fstab ${SYSIMAGE}/etc/fstab
+	sudo install -m644 etc/tmpfiles.d/* ${SYSIMAGE}/etc/tmpfiles.d
+	sudo install -m644 etc/apt/sources.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list
 
 	if [ ! -z "$CRYPT" ]
 	then
 		build_from_template etc/fstab.crypt
-		sudo install etc/fstab.crypt ${SYSIMAGE}/etc/fstab
+		sudo install -m644 etc/fstab.crypt ${SYSIMAGE}/etc/fstab
 		build_from_template etc/crypttab
-		sudo install etc/crypttab ${SYSIMAGE}/etc/crypttab
+		sudo install -m644 etc/crypttab ${SYSIMAGE}/etc/crypttab
 	fi
 
 	# Steal network config from the host filesystem. Normally debootstrap
 	# will do this for us but if we roam networks between generating the
 	# cached image and consuming it then we must update the file.
-	sudo install /etc/resolv.conf ${SYSIMAGE}/etc/resolv.conf
+	sudo install -m644 /etc/resolv.conf ${SYSIMAGE}/etc/resolv.conf
 }
 
 # The recipe to generate the tarball.
@@ -197,12 +197,12 @@ do_kernel () {
 
 	cat etc/default/u-boot.append | sudo tee -a ${SYSIMAGE}/etc/default/u-boot > /dev/null
 	cat etc/initramfs-tools/modules.append | sudo tee -a ${SYSIMAGE}/etc/initramfs-tools/modules > /dev/null
-	sudo install etc/initramfs-tools/conf.d/* ${SYSIMAGE}/etc/initramfs-tools/conf.d/
-	sudo install etc/apt/sources.list.d/kernel-obs.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list.d/kernel-obs.list
-	sudo install etc/apt/trusted.gpg.d/* ${SYSIMAGE}/etc/apt/trusted.gpg.d/
+	sudo install -m644 etc/initramfs-tools/conf.d/* ${SYSIMAGE}/etc/initramfs-tools/conf.d/
+	sudo install -m644 etc/apt/sources.list.d/kernel-obs.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list.d/kernel-obs.list
+	sudo install -m644 etc/apt/trusted.gpg.d/* ${SYSIMAGE}/etc/apt/trusted.gpg.d/
 	sudo install etc/kernel/postinst.d/* ${SYSIMAGE}/etc/kernel/postinst.d/
 	sudo mkdir -p ${SYSIMAGE}/var/lib/alsa/
-	sudo install var/lib/alsa/asound.state ${SYSIMAGE}/var/lib/alsa/asound.state
+	sudo install -m644 var/lib/alsa/asound.state ${SYSIMAGE}/var/lib/alsa/asound.state
 	on_target dpkg --add-architecture arm64
 	on_target apt-get update
 	on_target apt-get install -y linux-image-pinebookpro-arm64
