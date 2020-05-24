@@ -24,7 +24,7 @@ build_from_template () {
 }
 
 on_target () {
-	sudo LANG=C chroot ${PWD}/sysimage "$@"
+	sudo LANG=C PATH=/usr/sbin:$PATH chroot ${PWD}/sysimage "$@"
 }
 
 do_prep () {
