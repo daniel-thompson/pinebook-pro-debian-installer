@@ -198,7 +198,8 @@ do_kernel () {
 	cat etc/default/u-boot.append | sudo tee -a ${SYSIMAGE}/etc/default/u-boot > /dev/null
 	cat etc/initramfs-tools/modules.append | sudo tee -a ${SYSIMAGE}/etc/initramfs-tools/modules > /dev/null
 	sudo install -m644 etc/initramfs-tools/conf.d/* ${SYSIMAGE}/etc/initramfs-tools/conf.d/
-        if -f etc/apt/sources.list.d/kernel-obs.list.${RELEASE}; then
+        if [ -f etc/apt/sources.list.d/kernel-obs.list.${RELEASE} ]
+	then
           sudo install -m644 etc/apt/sources.list.d/kernel-obs.list.${RELEASE} ${SYSIMAGE}/etc/apt/sources.list.d/kernel-obs.list
         else
           # Use the bullseye kernel for releases we don't know about.
