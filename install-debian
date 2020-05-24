@@ -304,7 +304,7 @@ do_all () {
 ARCH=arm64
 RELEASE=bullseye
 SYSIMAGE="${PWD}/sysimage"
-MMCBLK="$(readlink -f /dev/disk/by-path/platform-fe320000.dwmmc)"
+MMCBLK="$(readlink -f /dev/disk/by-path/platform-fe320000.*mmc)"
 
 # For now we have *very* simple argument processing (similar to make)
 unset DO
