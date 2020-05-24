@@ -34,7 +34,19 @@ do_prep () {
 
 	PACKAGES="debootstrap pigz dosfstools"
 	[ ! -z "$CRYPT" ] && PACKAGES="$PACKAGES cryptsetup"
-	sudo apt-get install -y $PACKAGES
+
+	if [ -x "$(command -v apt-get)" ]
+	then
+		sudo apt-get install -y $PACKAGES
+	else if [ -x "$(command -v pacman)" ]
+	then
+		sudo pacman -S --needed --noconfirm $PACKAGES
+	else
+		printf '\n\nWARNING: could not find a package manager.\n'
+		printf 'Make sure the following packages are installed:\n'
+		printf "  $PACKAGES\n\n"
+	fi
+	fi
 }
 
 #
