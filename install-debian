@@ -30,7 +30,7 @@ on_target () {
 do_prep () {
 	printf '\n\n>>>> Preparing to install\n\n'
 
-	git submodule update --init
+	git submodule update --init --depth 1
 
 	PACKAGES="debootstrap pigz dosfstools"
 	[ ! -z "$CRYPT" ] && PACKAGES="$PACKAGES cryptsetup"
