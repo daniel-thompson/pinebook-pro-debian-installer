@@ -90,10 +90,14 @@ do_mkfs () {
 	if [ -z "$CRYPT" ]
 	then
 		sudo mkfs.ext4 -FL ${BLKNAME}-RootFS ${PARTITION}6
+		sudo mkfs.ext4 -FL ${BLKNAME}-Home ${PARTITION}7
 	else
 		sudo cryptsetup luksFormat ${PARTITION}6
 		sudo cryptsetup open ${PARTITION}6 ${BLKNAME}-RootFS
 		sudo mkfs.ext4 -FL ${BLKNAME}-RootFS /dev/mapper/${BLKNAME}-RootFS
+		sudo cryptsetup luksFormat ${PARTITION}7
+		sudo cryptsetup open ${PARTITION}7 ${BLKNAME}-Home
+		sudo mkfs.ext4 -FL ${BLKNAME}-Home /dev/mapper/${BLKNAME}-Home
 	fi
 }
 
@@ -104,6 +108,8 @@ do_mount () {
 	then
 		mkdir -p ${SYSIMAGE}
 		sudo mount ${PARTITION}6 ${SYSIMAGE}
+		sudo mkdir -p ${SYSIMAGE}/home
+		sudo mount ${PARTITION}7 ${SYSIMAGE}/home
 		sudo mkdir -p ${SYSIMAGE}/boot
 		sudo mount ${PARTITION}5 ${SYSIMAGE}/boot
 		sudo mkdir -p ${SYSIMAGE}/boot/efi
@@ -113,6 +119,9 @@ do_mount () {
 		[ ! -e /dev/mapper/${BLKNAME}-RootFS ] \
 			&& sudo cryptsetup open ${PARTITION}6 ${BLKNAME}-RootFS
 		sudo mount /dev/mapper/${BLKNAME}-RootFS ${SYSIMAGE}
+		[ ! -e /dev/mapper/${BLKNAME}-Home ] \
+			&& sudo cryptsetup open ${PARTITION}7 ${BLKNAME}-Home
+		sudo mount /dev/mapper/${BLKNAME}-Home ${SYSIMAGE}/home
 		sudo mkdir -p ${SYSIMAGE}/boot
 		sudo mount ${PARTITION}5 ${SYSIMAGE}/boot
 		sudo mkdir -p ${SYSIMAGE}/boot/efi
@@ -140,7 +149,7 @@ do_debootstrap () {
 	fi
 
 	sudo tar -C ${SYSIMAGE} -xf debootstrap-${RELEASE}-${ARCH}.tar.gz
-	sudo fallocate -l 2g ${SYSIMAGE}/swapfile
+	sudo fallocate -l 4g ${SYSIMAGE}/swapfile
 	sudo chmod 600 ${SYSIMAGE}/swapfile
 	sudo mkswap ${SYSIMAGE}/swapfile
 	build_from_template etc/fstab
@@ -265,7 +274,7 @@ do_tasksel () {
 do_umount () {
 	printf '\n\n>>>> umount\n\n'
 
-	for i in boot/efi boot dev proc sys
+	for i in boot/efi boot dev proc sys home
 	do
 		sudo umount ${SYSIMAGE}/$i && true
 	done
@@ -274,6 +283,7 @@ do_umount () {
 	if [ ! -z "$CRYPT" ]
 	then
 		sudo cryptsetup close /dev/mapper/${BLKNAME}-RootFS && true
+		sudo cryptsetup close /dev/mapper/${BLKNAME}-Home && true
 	fi
 }
 

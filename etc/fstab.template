@@ -1,4 +1,5 @@
-PARTLABEL=${BLKNAME}-EFI	/boot/efi	vfat	defaults,discard,relatime   0 0
-PARTLABEL=${BLKNAME}-Boot	/boot		ext4	defaults,discard,relatime   0 0
-PARTLABEL=${BLKNAME}-RootFS	/		ext4	defaults,discard,relatime   0 0
-/swapfile			swap		swap	defaults		    0 0
+PARTLABEL=${BLKNAME}-EFI	/boot/efi	vfat	defaults,discard,relatime   0 2
+PARTLABEL=${BLKNAME}-Boot	/boot		ext4	defaults,discard,relatime   0 2
+PARTLABEL=${BLKNAME}-RootFS	/		ext4	defaults,discard,relatime   0 1
+PARTLABEL=${BLKNAME}-Home	/home		ext4	defaults,discard,relatime   0 2
+/swapfile			swap		swap	defaults		    0 2

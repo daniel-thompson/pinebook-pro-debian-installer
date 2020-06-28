@@ -7,4 +7,5 @@ first-lba: 64
 /dev/mmcblk1p3 : start=       24576, size=        8192, type=8DA63339-0007-60C0-C436-083AC8230908, name="${BLKNAME}-TrustedFirmware-A", attrs="RequiredPartition"
 /dev/mmcblk1p4 : start=       32768, size=      409600, type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B, name="${BLKNAME}-EFI"
 /dev/mmcblk1p5 : start=      442368, size=     1024000, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="${BLKNAME}-Boot", attrs="LegacyBIOSBootable"
-/dev/mmcblk1p6 : start=     1466368,                    type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="${BLKNAME}-RootFS"
+/dev/mmcblk1p6 : start=     1466368, size=    51200000, type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="${BLKNAME}-RootFS"
+/dev/mmcblk1p7 : start=    52666368,                    type=0FC63DAF-8483-4772-8E79-3D69D8477DE4, name="${BLKNAME}-Home"
