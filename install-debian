@@ -220,7 +220,7 @@ do_kernel () {
 	sudo install -m644 etc/apt/trusted.gpg.d/* ${SYSIMAGE}/etc/apt/trusted.gpg.d/
 	sudo install etc/kernel/postinst.d/* ${SYSIMAGE}/etc/kernel/postinst.d/
 	sudo mkdir -p ${SYSIMAGE}/var/lib/alsa/
-	sudo install -m644 var/lib/alsa/asound.state ${SYSIMAGE}/var/lib/alsa/asound.state
+	sudo install -m644 pinebookpro-post-install/asound.state ${SYSIMAGE}/var/lib/alsa/asound.state
         sudo mkdir -p ${SYSIMAGE}/etc/udev/hwdb.d/
         sudo install -m644 pinebookpro-post-install/10-usb-kbd.hwdb ${SYSIMAGE}/etc/udev/hwdb.d/10-usb-kbd.hwdb
 	on_target dpkg --add-architecture arm64
