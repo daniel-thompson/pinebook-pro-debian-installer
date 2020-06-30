@@ -140,7 +140,8 @@ do_debootstrap () {
 	fi
 
 	sudo tar -C ${SYSIMAGE} -xf debootstrap-${RELEASE}-${ARCH}.tar.gz
-	sudo fallocate -l 2g ${SYSIMAGE}/swapfile
+	printf '\n\n>>>> Creating Swapfile\n\n'
+	sudo dd if=/dev/zero of=${SYSIMAGE}/swapfile bs=1M count=2048 status=progress
 	sudo chmod 600 ${SYSIMAGE}/swapfile
 	sudo mkswap ${SYSIMAGE}/swapfile
 	build_from_template etc/fstab
