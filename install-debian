@@ -167,7 +167,7 @@ do_debootstrap () {
 do_real_debootstrap () {
 	sudo debootstrap \
 		--arch=${ARCH} \
-		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,network-manager,sudo,u-boot-menu,gnupg,plymouth,plymouth-themes${DEBOOTSTRAP_PACKAGES} \
+		--include ca-certificates,console-setup,cryptsetup-initramfs,initramfs-tools,locales,keyboard-configuration,sudo,u-boot-menu,gnupg,plymouth,plymouth-themes${DEBOOTSTRAP_PACKAGES} \
 		${RELEASE} ${SYSIMAGE}
 	if [ -z $DRYRUN ]
 	then
