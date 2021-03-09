@@ -8,3 +8,6 @@
 [submodule "ap6256-firmware"]
 	path = ap6256-firmware
 	url = https://gitlab.manjaro.org/manjaro-arm/packages/community/ap6256-firmware
+[submodule "pinebookpro-post-install"]
+	path = pinebookpro-post-install
+	url = https://gitlab.manjaro.org/manjaro-arm/packages/community/pinebookpro-post-install.git
