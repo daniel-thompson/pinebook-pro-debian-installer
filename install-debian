@@ -231,9 +231,14 @@ do_firmware () {
 	printf '\n\n>>>> Installed additional firmware files\n\n'
 
 	sudo mkdir -p ${SYSIMAGE}/lib/firmware/{brcm,rockchip}
-	sudo cp -a ap6256-firmware/*.[bcht]* ${SYSIMAGE}/lib/firmware/brcm/
-	sudo cp -a pinebook-firmware/brcm/* ${SYSIMAGE}/lib/firmware/brcm/
-	sudo cp -a pinebook-firmware/rockchip/* ${SYSIMAGE}/lib/firmware/rockchip/
+
+	sudo mkdir -p ${SYSIMAGE}/lib/firmware/{brcm,rockchip}
+	sudo install -Dm644 ap6256-firmware/BCM4345C5.hcd ${SYSIMAGE}/lib/firmware/brcm/
+	sudo install -Dm644 ap6256-firmware/nvram_ap6256.txt ${SYSIMAGE}/lib/firmware/brcm/brcmfmac43456-sdio.txt
+	sudo install -Dm644 ap6256-firmware/nvram_ap6256.txt ${SYSIMAGE}/lib/firmware/brcm/brcmfmac43456-sdio.pine64,pinebook-pro.txt
+	sudo install -Dm644 ap6256-firmware/fw_bcm43456c5_ag.bin ${SYSIMAGE}/lib/firmware/brcm/brcmfmac43456-sdio.bin
+	sudo install -Dm644 ap6256-firmware/brcmfmac43456-sdio.clm_blob ${SYSIMAGE}/lib/firmware/brcm/brcmfmac43456-sdio.clm_blob
+	sudo install -Dm644 pinebook-firmware/rockchip/* ${SYSIMAGE}/lib/firmware/rockchip/
 }
 
 do_configure () {
